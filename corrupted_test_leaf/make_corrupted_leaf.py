@@ -588,7 +588,7 @@ def elastic_transform(image, severity=1):
 class CoffeeLeavesDataset(data.Dataset):
     """Coffee Leaves Dataset."""
         
-    def __init__(self, image_list, images_dir, dataset, fold=1, select_dataset=0, transforms=None, severity=1, method=None):
+    def __init__(self, image_list, images_dir, dataset, select_dataset=0, transforms=None, severity=1, method=None):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -597,7 +597,6 @@ class CoffeeLeavesDataset(data.Dataset):
             transforms : Image transformations
             fold (int{1,5}) : The data is changed based on the selected fold
         """        
-        self.fold = fold
         self.image_list = image_list
         #self.data = self.split_dataset(dataset)
         self.images_dir = images_dir
@@ -621,12 +620,6 @@ class CoffeeLeavesDataset(data.Dataset):
         image = self.method(image, self.severity)
 
          # Get label of the image
-        #label_dis = self.data.iloc[idx, 1]
-        #label_dis = torch.tensor(label_dis, dtype=torch.long)
-    
-        #label_sev = self.data.iloc[idx, -1]
-        #label_sev =  torch.tensor(label_sev, dtype=torch.long)
-
         label = self.image_list[idx].split('/')[-2]
         save_path =  self.method.__name__ + '/' + str(self.severity) + '/'+ \
                     label+'/'+self.image_list[idx].split('/')[-1]
@@ -676,14 +669,13 @@ def save_distorted(method=gaussian_noise):
                 image_list=image_list,
                 images_dir=images_dir,
                 dataset='test',
-                fold=fold,
                 select_dataset=select_clf,
                 method=method,
                 severity = severity,
                 transforms=val_transforms
                 )
         distorted_dataset_loader = torch.utils.data.DataLoader(
-            test_dataset, batch_size=100, shuffle=False, num_workers=1)
+            test_dataset, batch_size=100, shuffle=False, num_workers=8)
 
         for _ in distorted_dataset_loader: continue
 
@@ -697,25 +689,25 @@ import collections
 print('\nUsing ImageNet data')
 
 d = collections.OrderedDict()
-d['Gaussian Noise'] = gaussian_noise
+#d['Gaussian Noise'] = gaussian_noise
 #d['Shot Noise'] = shot_noise
-#d['Impulse Noise'] = impulse_noise
-#d['Defocus Blur'] = defocus_blur
-#d['Glass Blur'] = glass_blur
-#d['Motion Blur'] = motion_blur
-#d['Zoom Blur'] = zoom_blur
-#d['Snow'] = snow
-#d['Frost'] = frost
-d['Fog'] = fog
-d['Brightness'] = brightness
-d['Contrast'] = contrast
-d['Elastic'] = elastic_transform
-d['Pixelate'] = pixelate
-d['JPEG'] = jpeg_compression
-d['Speckle Noise'] = speckle_noise
-d['Gaussian Blur'] = gaussian_blur
-d['Spatter'] = spatter
-d['Saturate'] = saturate
+d['Impulse Noise'] = impulse_noise
+d['Defocus Blur'] = defocus_blur
+d['Glass Blur'] = glass_blur
+d['Motion Blur'] = motion_blur
+d['Zoom Blur'] = zoom_blur
+d['Snow'] = snow
+d['Frost'] = frost
+#d['Fog'] = fog
+#d['Brightness'] = brightness
+#d['Contrast'] = contrast
+#d['Elastic'] = elastic_transform
+#d['Pixelate'] = pixelate
+#d['JPEG'] = jpeg_compression
+#d['Speckle Noise'] = speckle_noise
+#d['Gaussian Blur'] = gaussian_blur
+#d['Spatter'] = spatter
+#d['Saturate'] = saturate
 
 for method_name in d.keys():
     save_distorted(d[method_name])
