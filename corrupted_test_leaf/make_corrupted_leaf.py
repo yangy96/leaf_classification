@@ -12,6 +12,7 @@ import numpy as np
 
 import numbers
 import pandas as pd
+from tqdm import tqdm
 # /////////////// Data Loader ///////////////
 
 
@@ -662,8 +663,29 @@ def save_distorted(method=gaussian_noise):
         for j in os.listdir("../split_train_test/test"+os.sep+i):
             if j.endswith(".jpg"):
                 image_list.append("../split_train_test/test"+os.sep+i+os.sep+j)
+    severity = 5
+    for idx in tqdm(image_list):
+        img_name = os.path.join(idx)
+            # Open image
+        image = Image.open(img_name)        
+        
+        # Apply transformations
+        image = val_transforms(image)
+        image = method(image,severity)
+        label = idx.split('/')[-2]
+        save_path =  method.__name__ + '/' + str(severity) + '/'+ \
+                    label+'/'+idx.split('/')[-1]
+
+        if not os.path.exists(method.__name__):
+            os.makedirs(method.__name__)
+        if not os.path.exists(method.__name__+ '/' + str(severity)):
+            os.makedirs(method.__name__+ '/' + str(severity))
+        if not os.path.exists(method.__name__+ '/' + str(severity)+ '/' + str(label)):
+            os.makedirs(method.__name__+ '/' + str(severity)+ '/' + str(label))
+
+        Image.fromarray(np.uint8(image)).resize((2048,1024)).save(save_path, quality=100, optimize=True)
     #print(image_list)
-    for severity in range(1, 6):
+    """for severity in range(1, 6):
         print(method.__name__, severity)
         test_dataset = CoffeeLeavesDataset(
                 image_list=image_list,
@@ -677,7 +699,7 @@ def save_distorted(method=gaussian_noise):
         distorted_dataset_loader = torch.utils.data.DataLoader(
             test_dataset, batch_size=100, shuffle=False, num_workers=8)
 
-        for _ in distorted_dataset_loader: continue
+        for _ in distorted_dataset_loader: continue"""
 
 
 # /////////////// End Further Setup ///////////////
@@ -691,13 +713,13 @@ print('\nUsing ImageNet data')
 d = collections.OrderedDict()
 #d['Gaussian Noise'] = gaussian_noise
 #d['Shot Noise'] = shot_noise
-d['Impulse Noise'] = impulse_noise
-d['Defocus Blur'] = defocus_blur
-d['Glass Blur'] = glass_blur
+#d['Impulse Noise'] = impulse_noise
+#d['Defocus Blur'] = defocus_blur
+#d['Glass Blur'] = glass_blur
 d['Motion Blur'] = motion_blur
-d['Zoom Blur'] = zoom_blur
+#d['Zoom Blur'] = zoom_blur
 d['Snow'] = snow
-d['Frost'] = frost
+#d['Frost'] = frost
 #d['Fog'] = fog
 #d['Brightness'] = brightness
 #d['Contrast'] = contrast
